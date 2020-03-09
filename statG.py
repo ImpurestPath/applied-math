@@ -1,11 +1,10 @@
 import numpy as np
-import scipy.stats 
+import scipy.stats
 import math
 import random
 
 
 class Gauss:
-
 
     def __init__(self):
         self.numbers = []
@@ -19,9 +18,10 @@ class Gauss:
         return self.numbers
 
     def sign_test(self, a):
-        #Page 337 
+        # Page 337
+        # https://en.wikipedia.org/wiki/Sign_test
         """
-        
+
         """
         # critical_values = {
         #     0.01 : 3,
@@ -32,13 +32,11 @@ class Gauss:
         positive = np.sum(numbers > a)
         negative = np.sum(numbers < a)
         n = positive + negative
-        F = positive / (n - negative + 1)
-        df1 = 2 * (n - positive + 1)
-        df2 = 2 * positive
-        p_value = scipy.stats.f.cdf(F, df1, df2)
+        p_value = scipy.stats.binom.cdf(min(positive, negative), n, 0.5)
         p_value = 2 * min(p_value, 1 - p_value)
         return p_value
 
+    
     def wilcoxon_test(self, a):
         # Page 339
         # critical_values = {
@@ -49,22 +47,16 @@ class Gauss:
         y_sorted = sorted(self.numbers, key=abs)
         y = {}
         for i in range(len(y_sorted)):
-            y[i] = [x for x in self.numbers if abs(x) == y_sorted[i]]
+            y[i + 1] = [x for x in self.numbers if abs(x) == y_sorted[i]]
 
         T = 0
         for key, numbers in y.items():
-            k = len([x for x in numbers if x > 0])
+            k = len([x for x in numbers if x > a])
             if k > 0:
                 T += k * key
-        
         n = len(self.numbers)
         M = n * (n + 1) / 4
-        D = M * (2 * n + 1) / 6
-        p_value = scipy.stats.norm.cdf(T, M, D)
+        D = n * (n + 1) * (2 * n + 1) / 24
+        p_value = scipy.stats.norm.cdf(T, M, math.sqrt(D))
         p_value = 2 * min(p_value, 1 - p_value)
         return p_value
-        
-        
-
-
-        
